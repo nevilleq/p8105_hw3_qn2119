@@ -327,13 +327,102 @@ Make a two-panel plot showing the average temperature in January and in July in 
 Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
 
 
-```{r message = FALSE, warning = FALSE, error = FALSE}
+```{r message = FALSE, warning = FALSE, error = FALSE, cache = TRUE}
+#Load Data from P8105 git repo
 data("ny_noaa")
 
+#Dimensions(original)
+original.dim.noaa <- dim(ny_noaa)
+
 ny.noaa.df <- ny_noaa %>%
-  janitor::clean_names()
+  janitor::clean_names() %>%
+  mutate(
+    year = date %>% as.character() %>% strsplit(., "[-]") %>% sapply(., `[`, 1) %>% as.numeric(),  #String pull year
+    month = date %>% as.character() %>% strsplit(., "[-]") %>% sapply(., `[`, 2) %>% as.numeric(), #String pull month
+    day = date %>% as.character() %>% strsplit(., "[-]") %>% sapply(., `[`, 3) %>% as.numeric(),   #String pull day
+    month =  recode(month, '1'  = "January", '2' = "February", '3' = "March", '4' = "April",       #Factor, relevel month by name
+         '5' = "May", '6' = "June", '7' = "July", '8' = "August", '9' = "September",
+         '10' = "October", '11' = "November", '12' = "December") %>% 
+    as.factor() %>% forcats::fct_relevel(., month.name),
+    tmax = tmax %>% as.numeric()/10, #degrees c     
+    tmin = tmin %>% as.numeric()/10, #degrees c
+    prcp = prcp/10 #mm
+  ) %>%
+  select(id, year, month, day, everything(), -date) 
+
+missing.prct <- ny.noaa.df %>%
+  select(prcp:tmin) %>%
+  apply(., 2, is.na) %>%
+  apply(., 2, mean) %>%
+  round(., 4) * 100
+
+na.omit.prct <- ny.noaa.df %>%
+  na.omit() %>% nrow()/original.dim.noaa[1]*100
+
+#Most common snowfall count
+most.obs.snow <- ny.noaa.df %>% na.omit() %>%
+  mutate(snow = snow %>% as.character()) %>%  #Zero, for obvious reasons, it doesn't snow that often in nyc
+  count(snow) %>% arrange(desc(n))  %>%
+  slice(1:5)
 
 ```
+
+```{r}
+#Two panel plot of avg max temp in January and July by station over the years
+
+avg.temp.plot.df <- ny.noaa.df %>%
+  na.omit() %>% filter(month == "January" | month == "July") %>%
+  group_by(id, year, month) %>%
+  summarize(
+    avg_max_temp = mean(tmax) %>% round(., 3)
+  )
+
+gg.avg.temp <- avg.temp.plot.df %>%
+  ggplot(aes(x = year, y = avg_max_temp, colour = id)) +
+    facet_grid(~month) +
+    viridis::scale_color_viridis(
+    option = "magma",
+    name = "Station", 
+    discrete = TRUE
+  ) + 
+    labs(
+    x = "Year",
+    y = expression(paste("Average Max Temperature ( ", degree ~ C, ")")),
+    title = "Plots of Avg Max Temp/Year by Station, (Jan., July)"
+  ) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(color = "black", 
+        size = 10, angle = 45, vjust = .5)) +
+  scale_x_continuous(breaks = seq(1980, 2010, 4))
+
+gg.avg.temp + geom_line(alpha = 0.3)
+gg.avg.temp + geom_point(alpha = 0.3)
+gg.avg.temp + geom_boxplot()
+
+```
+
+```{r}
+  gg.min.max <- ny.noaa.df %>%
+  na.omit() %>% ggplot(aes(x = tmin, y = tmax)) +
+    viridis::scale_fill_viridis(
+    option = "magma",
+    name = "Count", 
+    discrete = FALSE
+  ) + theme(
+    legend.text = element_text(size = 10, angle = 45, hjust = 1),
+    legend.title = element_text(size = 12, vjust = 1)
+  ) +
+  labs(
+    x = expression(paste("Average Min. Temperature ( ", degree ~ C, ")")),
+    y = expression(paste("Average Max. Temperature ( ", degree ~ C, ")")),
+    title = "Density of Maximum and Minimum Temperatures, NYC NOAA"
+  )
+  
+gg.min.max +  geom_hex(binwidth = c(1.8,1.8))
+#gg.min.max + geom_density_2d()
+#?geom_hex
+```
+
 
 ####Data Overview and Cleaning
 
