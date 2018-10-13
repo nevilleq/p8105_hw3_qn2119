@@ -22,8 +22,9 @@ knitr::opts_chunk$set(
 #  fig.height =   
   fig.width = 6,
 #  fig.asp = .5,
-  out.width = "90%"
+  out.width = "90%",
 #  out.height = 
+  cache = TRUE
 )
 
 #Set Theme for ggplot2
@@ -142,7 +143,7 @@ response.st.yr <- prop.response.df %>%
   ) +
   theme(legend.position = "right",
         axis.text.x = element_text(color = "black", 
-        size = 10, angle = 420.69, hjust = 1) )
+        size = 10, angle = 430, vjust = .5) )
 
   
   
@@ -170,11 +171,147 @@ Make a plot that shows the number of items ordered in each aisle. Order aisles s
 Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
 Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
 
-```{r warning = FALSE, error = FALSE, message = FALSE}
+```{r warning = FALSE, error = FALSE, message = FALSE, cache = TRUE}
+#Load data from p8105 datasets
+data("instacart")
+#Pull the dimmensions
+dim.insta.cart <- dim(instacart)
 
+
+insta.cart.df <- instacart %>%
+  janitor::clean_names() 
+
+#Summary of Customer Visits
+sum.df <- insta.cart.df %>%
+  janitor::clean_names() %>%
+  group_by(order_id, user_id) %>%
+  summarize(
+    n_items = max(add_to_cart_order),
+    n_unique_aisles = aisle_id %>% unique() %>% length(),
+    n_unique_dept = department %>% unique() %>% length(),
+    order_num = unique(order_number)
+    ) %>% gather(key = Customer_Stats, value = count, n_items:order_num) %>%
+  group_by(Customer_Stats) %>%
+  summarize(
+    median = median(count, na.rm = T),
+    mean = mean(count, na.rm = T),
+    variance = sd(count, na.rm = T)^2,
+    max = max(count),
+    min = min(count)
+    )
+#Summary of Customer Visits on the 100th visit
+max.order.case <- insta.cart.df %>%
+  filter(order_number == 100) %>%
+  group_by(order_id, user_id) %>%
+  summarize(
+    n_items = max(add_to_cart_order),
+    n_unique_aisles = aisle_id %>% unique() %>% length(),
+    n_unique_dept = department %>% unique() %>% length(),
+    order_num = unique(order_number)
+    ) %>% gather(key = Customer_Stats, value = count, n_items:order_num) %>%
+  group_by(Customer_Stats) %>%
+  summarize(
+    median = median(count, na.rm = T),
+    mean = mean(count, na.rm = T),
+    variance = sd(count, na.rm = T)^2,
+    max = max(count),
+    min = min(count)
+    )
+#Number of Unique products bought   
+unique.products <- insta.cart.df %>% distinct(., product_id) 
+
+
+#Top 5 Aisles
+n.unique.aisles <- insta.cart.df %>% distinct(., aisle) %>% nrow()
+top.5.aisles.df <- insta.cart.df %>%
+  count(aisle) %>% arrange(desc(n)) %>% slice(1:5) %>%
+  select(aisle)
 ```
 
-####Data Overview and Cleaning
+```{r}
+#Histogram of Order in each aisle
+
+hist.aisle.orders <- insta.cart.df %>%
+  count(aisle) %>% arrange(desc(n)) %>%
+  mutate(aisle = as.factor(aisle)) %>%
+  mutate(aisle = forcats::fct_reorder(aisle, n)) %>%
+  ggplot(aes(x = aisle, y = n)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme(legend.position = "right",
+        axis.text.y = element_text(color = "black", 
+        size = 6,  hjust = 1) ) 
+ 
+hist.aisle.orders
+
+
+#paste0(top.5.aisles$aisle, collapse = ", ")
+
+#Most popular item in “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
+pop.item.aisle.df <- insta.cart.df %>%
+  filter(aisle == "baking ingredients" | 
+         aisle == "dog food care" | 
+         aisle == "packaged vegetables fruits") %>%
+  count(product_name, aisle) %>%
+  group_by(aisle) %>%
+  summarize(
+    'Most Popular Product' = product_name[which.max(n)],
+    'Number Bought' = max(n)
+  ) %>%
+  rename(Aisle = aisle)
+pop.item.aisle.df %>%
+  knitr::kable()
+
+#Mean hour Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers
+#User function to change mean time (decimal, 24 hour) to 12 hour time (hour:min a.m./p.m.)
+#Inputs numeric vector, outputs character vector of same length
+dec.to.min <- function(x){
+  for (i in 1:length(x)) {  #loop through each vector element
+      y <- as.character(x[i])    #cast as character
+      y1 <- sapply(strsplit(y, "[.]"), `[`, 1) %>% as.numeric()  #split on decimal,pull hour, cast as numeric
+      y2 <- substring(x[i],3) %>% as.numeric()*60 #pull decimal, convert to minutes
+    if (y2 < 10) {
+        y2 <- paste0(0,round(y2))  #if less than 10, add "0_" and round to integer
+    } else {
+        y2 <- round(y2) #round to integer
+      }
+    if (y1 >= 13) {
+      y1 <- y1 - 12   #convert to 24 hour if p.m.
+      x[i] <- paste(y1, y2, sep = ":") %>%  #replace ith entry with "__:__ p.m." if hour > 13
+          paste(., "p.m.")
+    } else if (y1 == 12) {
+      x[i] <- paste(y1, y2, sep = ":") %>% # #replace ith entry with "__:__ p.m." if hour = 12
+          paste(., "p.m.")
+    } else {
+      x[i] <- paste(y1, y2, sep = ":") %>% #replace ith entry with "__:__ a.m." if hour < 12.
+          paste(., "a.m.")
+    }
+  }
+  return(x)
+}
+
+
+  insta.cart.df %>%
+  filter(product_name == "Pink Lady Apples" |
+         product_name == "Coffee Ice Cream") %>%
+  group_by(order_dow) %>%
+  summarize(
+    mean_hour = mean(order_hour_of_day)
+  ) %>%
+  mutate(
+    mean_hour = dec.to.min(mean_hour),
+    order_dow = c("Sunday", "Monday", "Tuesday", "Wednesday",
+                  "Thursday", "Friday", "Saturday")
+  ) %>%
+  rename('Order Day of the Week' = order_dow,
+         'Mean Time of Order' = mean_hour) %>%
+  knitr::kable()
+```
+
+
+
+####Data Overview
+
 
 
 ####Solutions
@@ -191,8 +328,10 @@ Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a
 
 
 ```{r message = FALSE, warning = FALSE, error = FALSE}
+data("ny_noaa")
 
-
+ny.noaa.df <- ny_noaa %>%
+  janitor::clean_names()
 
 ```
 
@@ -204,38 +343,7 @@ Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a
 
 
 ```{r message = FALSE, warning = FALSE, error = FALSE, eval = FALSE}
-#Histogram of Excellent Responses in 2002
-hist.excel.02 <- brfss.df %>%
-                 filter(year == 2002) %>%
-                 ggplot() +
-                 geom_histogram(aes(x = excellent),
-                                color = "black", fill = "lightblue") +
-                 geom_vline(xintercept = med.excel.2002, size = 2, colour = "red", linetype = "dashed") +
-                 labs(
-                   x = "Percentage Excellent Response (%)",
-                   y = "Count",
-                   title = "Histogram of % Excellent Response, 2002"
-                 )
-hist.excel.02
 
-#Scatter of Prop. Excellent in NY County and Queens County, from 2002 to 2010
-scatter.excel.02.10 <- brfss.df %>%
-                       filter(county == "NEW YORK COUNTY" |
-                              county == "QUEENS COUNTY") %>%
-                       ggplot(aes(x = year, y = excellent, color = county)) +
-                       geom_point(alpha = 0.9, size = 2) +
-                       geom_line(alpha = 0.5, size = 0.5) +
-                       labs(
-                         x = "Year",
-                         y = "Excellent Responses (%)",
-                         title = "Scatter Plot of % Excellent Responses"
-                       ) +
-                       scale_color_manual(
-                         name = "County",
-                         values = c("Lightblue", "Purple"),
-                         labels = expression("New York County", "Queens County")
-                         )
-scatter.excel.02.10
 ```
 
 #Appendix
