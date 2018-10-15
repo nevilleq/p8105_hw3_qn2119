@@ -1,0 +1,17 @@
+base
+tidyverse
+ggplot2
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+readxl
+p8105.datasets
+patchwork
+ggridges
+gridExtra
+bindrcpp
+hexbin
