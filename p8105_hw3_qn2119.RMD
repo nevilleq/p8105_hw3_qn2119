@@ -117,22 +117,20 @@ Next, we produced a a table showing, for the years 2002, 2006, and 2010, the mea
   knitr::kable()
 ```  
 
-Lastly, for each year and state, we computed the average proportion in each response category (taking the average across locations in a state). Below, we obtained a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time. We observed a relatively stable temporal distribution of approximately 20-30% "Excellent", 30-40% "Very Good", 25-35% "Good", 5-15% "Fair", and 2.5-7.5% "Poor" responses by state per year. Additionally, the variability in proportion state responses per year in the "Excellent" - "Good" categories was quite high, while the variability for "Fair" and "Poor" responses was significantly lower.
+Lastly, for each year and state, we computed the average proportion in each response category (taking the average across locations in a state). Below, we obtained a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time. We observed a relatively stable temporal distribution of approximately 20-30% "Excellent", 30-40% "Very Good", 25-35% "Good", 5-15% "Fair", and 2.5-7.5% "Poor" responses by state per year. Additionally, the variability in proportion state responses per year in the "Excellent" - "Good" categories was quite high, while the variability for "Fair" and "Poor" responses was significantly lower. Finally, after fitting a linear model (in black), we see a downward trend in proportion of "Excellent" responses from 2002-2010, a slight increase in proportion of "Very Good" and "Good" reponses, and relatively little change in "Fair" and "Poor" responses over the same time period. 
 ```{r warning = FALSE}
 #5 plot summary
-prop.response.df <- brfss.df %>%
-  spread(key = response, value = proportion) %>%                                          #Create col. vars for % responses
+response.st.yr.gg <- brfss.df %>%
+  spread(key = response, value = proportion) %>%          #Create col. vars for % responses
             janitor::clean_names() %>%
   group_by(year, state) %>%
-  summarize(Excellent = mean(excellent, na.rm = T),
+  summarize(Excellent = mean(excellent, na.rm = T),       #Calculate mean prop. response by year/state
             Very_good = mean(very_good, na.rm = T),
             Good = mean(good, na.rm = T),
             Fair = mean(fair, na.rm = T),
             Poor = mean(poor, na.rm = T)) %>%
-  gather(key = response, value = mean, Excellent:Poor) %>%
-  mutate(response = forcats::fct_relevel(response, c("Excellent", "Very_good", "Good", "Fair", "Poor")))
-
-response.st.yr <- prop.response.df %>%
+  gather(key = response, value = mean, Excellent:Poor) %>%  #Return to tidy format
+  mutate(response = forcats::fct_relevel(response, c("Excellent", "Very_good", "Good", "Fair", "Poor"))) %>% #Relevel
   ggplot(aes(x = year, y = mean, colour = state)) +
   facet_grid(~response) +
     viridis::scale_color_viridis(
@@ -149,7 +147,7 @@ response.st.yr <- prop.response.df %>%
         axis.text.x = element_text(color = "black", 
         size = 10, angle = 430, vjust = .5) )
 
-response.st.yr + geom_line()
+response.st.yr.gg + geom_line() + geom_smooth(method = "lm", alpha = 0.9, size = 0.75, colour = "black", se = F)
 ```
 
 #Problem 2
