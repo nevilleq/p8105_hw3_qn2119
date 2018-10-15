@@ -400,7 +400,7 @@ gg.avg.temp +
 
 Lastly, we created a two panel plot showing the (1) Density of minimum and maximum temperatures reported across all stations over all years in a binned hex-plot and (2) Distribution of snowfall between 0 and 100 mm each year from 1981-2010. We observed from panel (1), that the highest concentration of minimum and maximum temperatures reported fell between -5 to 25 degrees at maximum and -20 to 20 degrees at minimum, with an entire range of aboute -40 to 40 for both (with a few warmer outliers for maximum temperature). With respect to panel (2), we observed that the distribution of snowfall from the years 1981-2010 did not vary significantly from year to year. Additionally, each year the distribution exhibited a heavy right skew, with a majority of stations reporting between 0-25mm and a few clusterings around 50 and 80mm each year. 
 
-```{r fig.width = 8, fig.height = 10, out.width = "90%", fig.asp = 1}
+```{r fig.width = 8, fig.height = 10, out.width = "90%", fig.asp = 1, message = FALSE, warning = FALSE, error = FALSE}
 # (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option)
   gg.min.max <- ny.noaa.df %>%
   na.omit() %>% ggplot(aes(x = tmin, y = tmax)) +
