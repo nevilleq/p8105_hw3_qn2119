@@ -100,13 +100,13 @@ line.gg.02.10 <- state.obs.02.10 + geom_line(alpha = 0.8)
 smooth.gg.02.10 <- state.obs.02.10 + geom_smooth(alpha = 0.8, se = FALSE)
 ```
 
-We then obtained linear and smoothed spaghetti plots of the number of locations in each state from 2002 to 2010. 
+We then obtained linear and smoothed spaghetti plots of the number of locations in each state from 2002 to 2010. We see that most states are observed at fewer than 10 distinct locations each years, while a few outlying states are observed at almost 20 distinct locations per year and one state was observed at over 40 locations in 2007 and 2010.
 ```{r echo = FALSE, warning = FALSE, message = FALSE, error = FALSE}
 line.gg.02.10 
 smooth.gg.02.10
 ```
 
-Next, we produced a a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
+Next, we produced a a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State. We see that there was very little change in percent "Excellent" responses from 2002 to 2006, but a significant increase in the mean percentage of respondants ellecting an "Excellent" response to "overall Health" in 2010, with a significant reduction in response variability.
 ```{r warning = FALSE}
   brfss.df %>%
   filter(year == 2002 | year == 2006 | year == 2010 & 
@@ -117,7 +117,7 @@ Next, we produced a a table showing, for the years 2002, 2006, and 2010, the mea
   knitr::kable()
 ```  
 
-Lastly, for each year and state, we computed the average proportion in each response category (taking the average across locations in a state). Below, we obtained a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.
+Lastly, for each year and state, we computed the average proportion in each response category (taking the average across locations in a state). Below, we obtained a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time. We observed a relatively stable temporal distribution of approximately 20-30% "Excellent", 30-40% "Very Good", 25-35% "Good", 5-15% "Fair", and 2.5-7.5% "Poor" responses by state per year. Additionally, the variability in proportion state responses per year in the "Excellent" - "Good" categories was quite high, while the variability for "Fair" and "Poor" responses was significantly lower.
 ```{r warning = FALSE}
 #5 plot summary
 prop.response.df <- brfss.df %>%
@@ -220,7 +220,7 @@ sum.df %>% knitr::kable()
 user.310.df <- insta.cart.df %>%
   filter(user_id == 310)
 ```
-As an illustrative example of what these Instacart data actually describe, a group of purchase observations from customer `r user.310.df$user_id[1]`'s `r user.310.df$order_number[1]`th visit tell us that this customer ordered `r nrow(user.310.df)` items (`r paste0(user.310.df$product_name, collapse = ", ")`), of which `r user.310.df %>% filter(reordered == 1) %>% select(product_name)` was a reorder. These purchases were made from the `r paste0(user.310.df$aisle, collapse = ", ")` aisles in the `r paste0(user.310.df$department, collapse = ", ")` departments. Additionally, these purchases took place on Tuesday at 9 a.m. and it had been `r user.310.df$days_since_prior_order[1]` days since their last order. 
+As an illustrative example of what these Instacart data actually describe, a group of purchase observations from customer `r user.310.df$user_id[1]`'s `r user.310.df$order_number[1]`th visit tell us that this customer ordered `r nrow(user.310.df)` items (`r paste0(user.310.df$product_name, collapse = ", ")`), of which `r user.310.df %>% filter(reordered == 1) %>% select(product_name)` was a reorder. These purchases were made from the `r paste0(user.310.df$aisle, collapse = ", ")` aisles in the `r paste0(user.310.df$department, collapse = ", ")` departments. Additionally, these purchases took place on Tuesday at 9 a.m. and it had been `r user.310.df$days_since_prior_order[1]` days since their last order. Together, this customer's total order comprised `r nrow(user.310.df)` purchase observations in the Instacart dataset.
 
 ####Solutions
 ```{r}
@@ -257,7 +257,7 @@ hist.aisle.orders
 
 ```
 
-Next, we obtained a table of the most popular items ordered from the “baking ingredients”, “dog food care”, and “packaged vegetables fruits” aisles, respectively. Light Brown sugar is a very common baking ingredient, and makes sense that it would be the most purchased baking ingredient. The specific dog treats purchased most in the dog food care aisle would not be immediately obvious, but apparently these are the most popular dog food treat. Lastly, spinach is a very popular vegetable purchase amongst current younger demographics prone to ordering groceries over the internet, so the fact that spinach is the most popular purchase in the packaged vegetables aisle is not wholly unsurprising. (Table found below)
+Next, we obtained a table of the most popular items ordered from the “baking ingredients”, “dog food care”, and “packaged vegetables fruits” aisles, respectively. Light Brown sugar is a very common baking ingredient, and makes sense that it would be the most purchased baking ingredient. The specific dog treats purchased most in the dog food care aisle would not be immediately obvious, but apparently these were the most popular dog food treat. Lastly, spinach is a very popular vegetable purchase amongst current younger demographics prone to ordering groceries over the internet, so the fact that spinach was the most popular purchase in the packaged vegetables aisle is not wholly unsurprising. (Table found below)
 ```{r}
 #Most popular item in “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
 pop.item.aisle.df <- insta.cart.df %>%
@@ -275,7 +275,7 @@ pop.item.aisle.df %>%
   knitr::kable()
 ```
 
-Lastly, we obtained a table of the mean hour of the day (12 hour, a.m./p.m.), per each day of the week, that both Pink Lady Apples and Coffee Ice Cream are purchased. Here we assumed that for days coded (0-6), that 0 corresponded to Sunday, and the rest followed suit until 6 - Saturday. We notice that on average, these two items are most often purchased in the early afternoon, but significantly later on Wednesdays than any other day of the week. (Table found below)
+Lastly, we obtained a table of the mean hour of the day (12 hour, a.m./p.m.), per each day of the week, that both Pink Lady Apples and Coffee Ice Cream are purchased. Here we assumed that for days coded (0-6), that 0 corresponded to Sunday, and the rest followed suit until 6 - Saturday. We noticed that on average, these two items were most often purchased in the early afternoon, but significantly later on Wednesdays than any other day of the week. (Table found below)
 ```{r}
 #Mean hour Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers
 #User function to change mean time (decimal, 24 hour) to 12 hour time (hour:min a.m./p.m.)
@@ -324,7 +324,7 @@ dec.to.min <- function(x){
 ```
 
 #Problem 3
-This problem focuses on the NY NOAA data. To begin, we will do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.
+This problem focuses on the NY NOAA data. To begin, we will do some data cleaning, creating separate variables for year, month, and day, and standardizing observation units for temperature, precipitation, and snowfall (mm, degrees Celsius), respectively.
 ```{r message = FALSE, warning = FALSE, error = FALSE, cache = TRUE}
 #Load Data from P8105 git repo
 data("ny_noaa")
@@ -367,7 +367,7 @@ Next, we will provide a short description of the dataset, noting the size and st
 -  Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
 
 ####Data Overview
-Considering the NYC NOAA data, there were `r original.dim.noaa[1]` weather station observations in `r original.dim.noaa[2]` variables. Here, each observation is a report from an individual NYC weather station to the NOAA, and the variables describe the year, month, and day of observation, the precipitation, snowfall, and snow depth in millimeters, as well as the maximum and minimum temperature in degrees celsius. From the original data, precipitation, snowfall, snow depth, max temp., and min. temp are each missing to varying degrees (`r paste0(missing.prct, collapse = "%, ")`%), respectively. Missing precipitation for about 5% of the data is not a huge problem, but for the remaining variables, thehigh degree to which the information is missing does not allow us to assume that these data are missing at random, and severly limits the degree to which we could draw inferential conclusions from the data. 
+Considering the NYC NOAA data, there were `r original.dim.noaa[1]` weather station observations in `r original.dim.noaa[2]` variables. Here, each observation is a report from an individual NYC weather station to the NOAA, and the variables describe the year, month, and day of observation, the precipitation, snowfall, and snow depth in millimeters, as well as the maximum and minimum temperature in degrees Celsius. From the original data, precipitation, snowfall, snow depth, max temp., and min. temp are each missing to varying degrees (`r paste0(missing.prct, collapse = "%, ")`%), respectively. Missing precipitation for about 5% of the data is not a huge problem, but for the remaining variables, the high degree to which the information is missing does not allow us to assume that these data were missing at random, and severly limits the degree to which we could draw inferential conclusions from the data. 
 
 ####Solutions
 ```{r message = FALSE, warning = FALSE, error = FALSE, cache = TRUE}
@@ -380,12 +380,12 @@ most.obs.snow <- ny.noaa.df %>% na.omit() %>%
          'Number of Observations' = n)
 ```
 
-With respect to snowfall, we obtained that the most common observation by far is 0mm of snowfall reported by a NYC weather station. This is not wholly unsurprising as it does not snow that frequently in NYC, even during the winter months. However, it is interesting to note that the next most common observation is 25mm of snowfall, which is not a trivial amount of snowfall. A table of the 5 most common snowfall observations can be found below.
-```{r}
+With respect to snowfall, we obtained that the most common observation by far was 0mm of snowfall reported by a NYC weather station. This is not wholly unsurprising as it does not snow that frequently in NYC, even during the winter months. However, it is interesting to note that the next most common observation was 25mm of snowfall, which is not a trivial amount of snowfall. A table of the 5 most common snowfall observations can be found below.
+```{r echo = FALSE}
 most.obs.snow %>% knitr::kable()
 ```
 
-Next, we obtained a two panel plot for the average maximum temperature in degrees celsius reported by each station from 1981-2010, for the months of January and July, respectively. We observe that the average maximum temperature is much more variable in January than in July each year, meaning that the average station reported a much wider range of maximum temperatures (more outliers) in the winter than in the summer within each year. Additionally, from year to year, the average maximum temperature reported varied much more in the winter than in the summer, with a small but significant increase in overall average maximum temperature across all stations in January and little to no observably significant change in July from 1981-2010. This would suggest that average maxmimum temperatures reported across all stations were much more variable and increased in January from 1981-2010, while there was much less variability and relatively little change in July over the same time period. 
+Next, we obtained a two panel plot for the average maximum temperature in degrees Celsius reported by each station from 1981-2010, for the months of January and July, respectively. We observed that the average maximum temperature was much more variable in January than in July each year, meaning that the average station reported a much wider range of maximum temperatures (more outliers) in the winter than in the summer within each year. Additionally, from year to year, the average maximum temperature reported varied much more in the winter than in the summer, with a small but significant increase in overall average maximum temperature across all stations in January and little to no observably significant change in July from 1981-2010. This would suggest that average maxmimum temperatures reported across all stations were much more variable and increased in January from 1981-2010, while there was much less variability and relatively little change in July over the same time period. 
 ```{r}
 #Two panel plot of avg max temp in January and July by station over the years
 gg.avg.temp <- ny.noaa.df %>%
@@ -416,7 +416,7 @@ gg.avg.temp +
   geom_smooth(method = "lm", colour = "black", size = 0.75, alpha = 0.9)
 ```
 
-Lastly, we created a two panel plot showing the (1) Density of minimum and maximum temperatures reported across all stations over all years in a binned hex-plot and (2) Distribution of snowfall between 0 and 100 mm each year from 1981-2010. We see from panel (1), that the highest concentration of minimum and maximum temperatures reported lies between -5 to 25 degrees at maximum and -20 to 20 degrees at minimum, with an entire range of aboute -40 to 40 for both (with a few warmer outliers for maximum temperature). With respect to panel (2), we see that the distribution of snowfall from the years 1981-2010 does not vary significantly from year to year. Additionally, each year the distribution heavily right skewed, with a majority of stations reporting between 0-25mm and a few clusterings around 50 and 80mm each year. 
+Lastly, we created a two panel plot showing the (1) Density of minimum and maximum temperatures reported across all stations over all years in a binned hex-plot and (2) Distribution of snowfall between 0 and 100 mm each year from 1981-2010. We observed from panel (1), that the highest concentration of minimum and maximum temperatures reported fell between -5 to 25 degrees at maximum and -20 to 20 degrees at minimum, with an entire range of aboute -40 to 40 for both (with a few warmer outliers for maximum temperature). With respect to panel (2), we observed that the distribution of snowfall from the years 1981-2010 did not vary significantly from year to year. Additionally, each year the distribution exhibited a heavy right skew, with a majority of stations reporting between 0-25mm and a few clusterings around 50 and 80mm each year. 
 
 ```{r fig.width = 8, fig.height = 10, out.width = "90%", fig.asp = 1}
 
